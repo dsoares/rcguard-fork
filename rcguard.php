@@ -50,7 +50,7 @@ class rcguard extends rcube_plugin
         $rcmail = rcmail::get_instance();
         $client_ip = $this->get_client_ip();
 
-        $query = $rcmail->db->query("SELECT " . $this->unixtimestamp('last') . " AS last, " . $this->unixtimestamp('NOW()') . " as time " .
+        $query = $rcmail->db->query("SELECT " . $this->unixtimestamp('last') . " AS last, " . $this->unixnow() . " as time " .
                                     " FROM ".$this->table_name()." WHERE ip = ? AND hits >= ?",
                                     $client_ip, $rcmail->config->get('failed_attempts'));
         $result = $rcmail->db->fetch_assoc($query);
@@ -162,7 +162,7 @@ class rcguard extends rcube_plugin
         $rcmail = rcmail::get_instance();
 
         $query = $rcmail->db->query("DELETE FROM ".$this->table_name()." " .
-                                    " WHERE " . $this->unixtimestamp('last') . " + ? < " . $this->unixtimestamp('NOW()'),
+                                    " WHERE " . $this->unixtimestamp('last') . " + ? < " . $this->unixnow(),
                                     $rcmail->config->get('expire_time') * 60);
     }
 
@@ -186,7 +186,7 @@ class rcguard extends rcube_plugin
 
         $tmp = $loginform['content'];
         $tmp = str_ireplace('</tbody>',
-                            '<tr><td class="title" colspan="2"><div class="g-recaptcha" data-sitekey="'.$rcmail->config->get('recaptcha_publickey').'"></div></td>
+                            '<tr><td class="title"/><td class="input"><div class="g-recaptcha" data-sitekey="'.$rcmail->config->get('recaptcha_publickey').'"></div></td>
 </tr>
 </tbody>', $tmp);
         $loginform['content'] = $tmp;
@@ -245,7 +245,6 @@ class rcguard extends rcube_plugin
             $ts = "EXTRACT (EPOCH FROM $field)";
             break;
         case 'sqlite':
-            $field = preg_replace('/now\(\)/', 'now', $field);
             $ts = "strftime('%s', $field)";
             break;
         default:
